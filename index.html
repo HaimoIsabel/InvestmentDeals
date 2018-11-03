@@ -1,97 +1,167 @@
-<!DOCTYPE html>
-<style>
+<html>
+    <head>
+      <style>
 
-.axis .domain {
-  display: none;
-}
 
-</style>
-<svg width="1200" height="500"></svg>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script>
+      body {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+      }
 
-var svg = d3.select("svg"),
-    margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = +svg.attr("width") - margin.left - margin.right,
-    height = +svg.attr("height") - margin.top - margin.bottom,
-    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      #container {
+          height: 100%;
+          width: 100%;
+      }
 
-var x0 = d3.scaleBand()
-    .rangeRound([0, width])
-    .paddingInner(0.1);
+      .axis .domain {
+        display: none;
+      }
 
-var x1 = d3.scaleBand()
-    .padding(0.05);
+      .tooltip {
+        position: absolute;
+        line-height: 1.5;
+        font-weight: 200;
+        font-family: 'Helvetica Neue',Arial,freesans,sans-serif;
+        padding: 2px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #FFA500;
+        border-radius: 3px;
+        pointer-events: none;
+        font-size: 13px;
+      }
 
-var y = d3.scaleLinear()
-    .rangeRound([height, 0]);
+      </style>
+    </head>
+    <body>
+      <div id="container">
+      </div>
+      <script src="https://d3js.org/d3.v4.min.js"></script>
+      <script>
 
-var z = d3.scaleOrdinal()
-        .range(["#fdb863", "#fee0b6", "#d8daeb", "#b2abd2", "#8073ac"].reverse());
+      var Tooltip = d3.select('body')
+        .append('div')
+        .attr('class', 'tooltip');
 
-d3.csv("data.csv", function(d, i, columns) {
-  for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
-  return d;
-}, function(error, data) {
-  if (error) throw error;
+      var width = document.getElementById("container").clientWidth;
+      var height = document.getElementById("container").clientHeight;
 
-  var keys = data.columns.slice(1);
+      var margin = {top: 20, right: 20, bottom: 30, left: 40},
+          width = width - margin.left - margin.right,
+          height = height - margin.top - margin.bottom;
 
-  x0.domain(data.map(function(d) { return d.track; }));
-  x1.domain(keys).rangeRound([0, x0.bandwidth()]);
-  y.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
+      var svg = d3.select("#container")
+                  .append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom);
 
-  g.append("g")
-    .selectAll("g")
-    .data(data)
-    .enter().append("g")
-      .attr("transform", function(d) { return "translate(" + x0(d.track) + ",0)"; })
-    .selectAll("rect")
-    .data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
-    .enter().append("rect")
-      .attr("x", function(d) { return x1(d.key); })
-      .attr("y", function(d) { return y(d.value); })
-      .attr("width", x1.bandwidth())
-      .attr("height", function(d) { return height - y(d.value); })
-      .attr("fill", function(d) { return z(d.key); });
+      var g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  g.append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x0));
+      var x0 = d3.scaleBand()
+          .rangeRound([0, width])
+          .paddingInner(0.1);
 
-  g.append("g")
-      .attr("class", "axis")
-      .call(d3.axisLeft(y).ticks(null, "s"))
-    .append("text")
-      .attr("x", 2)
-      .attr("y", y(y.ticks().pop()) + 0.5)
-      .attr("dy", "0.32em")
-      .attr("fill", "#000")
-      .attr("font-weight", "bold")
-      .attr("text-anchor", "start")
-      .text("Round");
+      var x1 = d3.scaleBand()
+          .padding(0.05);
 
-  var legend = g.append("g")
-      .attr("font-family", "sans-serif")
-      .attr("font-size", 10)
-      .attr("text-anchor", "end")
-    .selectAll("g")
-    .data(keys.slice().reverse())
-    .enter().append("g")
-      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      var y = d3.scaleLinear()
+          .rangeRound([height, 0]);
 
-  legend.append("rect")
-      .attr("x", width - 19)
-      .attr("width", 19)
-      .attr("height", 19)
-      .attr("fill", z);
+      var z = d3.scaleOrdinal()
+              .range(["#fdb863", "#fee0b6", "#d8daeb", "#b2abd2", "#8073ac"].reverse());
 
-  legend.append("text")
-      .attr("x", width - 24)
-      .attr("y", 9.5)
-      .attr("dy", "0.32em")
-      .text(function(d) { return d; });
-});
 
-</script>
+      d3.csv("data.csv", function(d, i, columns) {
+        for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+        return d;
+      }, function(error, data) {
+        if (error) throw error;
+
+        var keys = data.columns.slice(1);
+
+        x0.domain(data.map(function(d) { return d.track; }));
+        x1.domain(keys).rangeRound([0, x0.bandwidth()]);
+        y.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
+
+        g.append("g")
+          .selectAll("g")
+          .data(data)
+          .enter().append("g")
+            .attr("transform", function(d) { return "translate(" + x0(d.track) + ",0)"; })
+          .selectAll("rect")
+          .data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
+          .enter().append("rect")
+            .attr("x", function(d) { return x1(d.key); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", x1.bandwidth())
+            .attr("height", function(d) { return height - y(d.value); })
+            .attr("fill", function(d) { return z(d.key); })
+            .on("mouseover",mouseOver)
+            .on("mousemove",mouseMove)
+            .on("mouseout",mouseOut);
+
+        g.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x0));
+
+        g.append("g")
+            .attr("class", "axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+          .append("text")
+            .attr("x", 2)
+            .attr("y", y(y.ticks().pop()) + 0.5)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("font-weight", "bold")
+            .attr("text-anchor", "start")
+            .text("Round");
+
+        var legend = g.append("g")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10)
+            .attr("text-anchor", "end")
+          .selectAll("g")
+          .data(keys.slice().reverse())
+          .enter().append("g")
+            .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+        legend.append("rect")
+            .attr("x", width - 19)
+            .attr("width", 19)
+            .attr("height", 19)
+            .attr("fill", z);
+
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9.5)
+            .attr("dy", "0.32em")
+            .text(function(d) { return d; });
+
+        function mouseOver(d){
+          Tooltip
+              .style('display', null)
+              .html( '<p>Year: '+ d.key
+                + '<br>No. of Deals: ' + d.value + '</p>');
+
+          };
+
+          function mouseMove(d){
+            Tooltip
+                .style('top', (d3.event.pageY -15) + "px")
+                .style('left', (d3.event.pageX +15) + "px");
+          };
+
+
+          function mouseOut(d){
+            Tooltip
+                .style('display', 'none');
+
+          };
+
+
+      });
+
+      </script>
+    </body>
+</html>
