@@ -27,7 +27,7 @@ var y = d3.scaleLinear()
     .rangeRound([height, 0]);
 
 var z = d3.scaleOrdinal()
-    .range(["#9970ab", "#c2a5cf", "#e7d4e8", "#a6dba0", "#5aae61"]);
+        .range(["#fdb863", "#fee0b6", "#d8daeb", "#b2abd2", "#8073ac"].reverse());
 
 d3.csv("data.csv", function(d, i, columns) {
   for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
